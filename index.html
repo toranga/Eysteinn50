@@ -80,7 +80,7 @@ canvas{display:block;max-width:100%;touch-action:none}
   <div class="avatar dance" style="font-size:120px">🤠</div>
   <h1>Saloon Eysteins</h1>
   <div class="sub rye" style="font-family:'Rye',serif;font-size:22px;color:var(--cream)">Fimmtugur og enn ósigraður</div>
-  <p class="sub">Eysteinn hefur aldrei tapað. Hann hefur heldur aldrei unnið með reisn.<br>Getur þú sigrað hann á afmælisdaginn?</p>
+  <p class="sub">Eysteinn hefur aldrei tapað. Hann hefur heldur aldrei unnið með reisn.<br>Getur þú sigrað hann á afmælisdaginn?<br><i>(Nei.)</i></p>
   <button class="btn" onclick="sfxClick();show('menu')">Byrja</button>
 </section>
 
@@ -88,9 +88,9 @@ canvas{display:block;max-width:100%;touch-action:none}
 <section class="screen" id="menu">
   <h2>Veldu áskorun</h2>
   <div class="hero"><div class="avatar" id="menuAv">🤠</div><div class="bubble" id="menuBubble">Veldu bara eitthvað. Ég vinn hvort sem er.</div></div>
-  <button class="menu-card" onclick="openPool()"><span class="ico">🎱</span><span><b>Pool</b>Settu fleiri kúlur ofan í en Eysteinn. <span class="badge" id="bPool">✔ Sigrað</span></span></button>
-  <button class="menu-card" onclick="openPoker()"><span class="ico">🃏</span><span><b>Póker</b>Fimm hendur af Texas Hold'em gegn meistaranum. <span class="badge" id="bPoker">✔ Sigrað</span></span></button>
-  <button class="menu-card" onclick="openDance()"><span class="ico">👢</span><span><b>Línudans-einvígi</b>Dansaðu í takt og sigraðu Eystein á dansgólfinu. <span class="badge" id="bDance">✔ Sigrað</span></span></button>
+  <button class="menu-card" onclick="openPool()"><span class="ico">🎱</span><span><b>Pool</b>Settu fleiri kúlur ofan í en Eysteinn.</span></button>
+  <button class="menu-card" onclick="openPoker()"><span class="ico">🃏</span><span><b>Póker</b>Fimm hendur af Texas Hold'em gegn meistaranum.</span></button>
+  <button class="menu-card" onclick="openDance()"><span class="ico">👢</span><span><b>Línudans-einvígi</b>Dansaðu í takt og sigraðu Eystein á dansgólfinu.</span></button>
 </section>
 
 <!-- POOL -->
@@ -145,8 +145,8 @@ canvas{display:block;max-width:100%;touch-action:none}
   <div class="row" style="align-items:flex-end"><div class="avatar dance" style="font-size:100px">🤠</div><div class="cake">🎂</div><div class="avatar wifeav" style="font-size:100px"></div></div>
   <div class="big50">50</div>
   <h1>Til hamingju með fimmtugsafmælið, Eysteinn!</h1>
-  <p class="sub" style="font-size:20px">Fimmtíu ár. Enn ósigraður.<br><i>(Nema í dag.)</i></p>
-  <div class="hero" style="width:min(460px,100%)"><div class="avatar wifeav" style="font-size:54px"></div><div class="bubble pink">Til hamingju, elskan! Þú ert bestur. Bara ekki í línudansi. 💋</div></div>
+  <p class="sub" style="font-size:20px">Fimmtíu ár. Enn ósigraður.<br><i>(Og verður það alltaf.)</i></p>
+  <div class="hero" style="width:min(460px,100%)"><div class="avatar wifeav" style="font-size:54px"></div><div class="bubble pink">Til hamingju, elskan! Þú ert bestur. Í öllu. Eins og þú minnir okkur á daglega. 💋</div></div>
   <p class="sub" style="font-family:'Rye',serif;font-size:22px">Kveðja, vinirnir 🤠🎱🃏👢</p>
   <button class="btn" onclick="show('menu')">Aftur í Saloon-ið</button>
 </section>
@@ -186,14 +186,14 @@ function say(id,text,dance){
   if(dance){const a=$('#'+id+'Av');a.classList.add('dance');clearTimeout(a._t);a._t=setTimeout(()=>a.classList.remove('dance'),2600);}
 }
 const won={};
-const WIFE_LINES=['Hann sagði þetta sama í gær. Svo tapaði hann fyrir mér.','Ekki hlusta á hann. Hann æfði sig í allt gærkvöld.','Rólegur, elskan.','Fimmtugur og hagar sér eins og fimm ára.','Hann vaskar upp í viku ef hann tapar. Bara svo þú vitir.','Ég er búin að heyra þetta svo oft...','Elskan, gestirnir eiga líka að fá að vinna.'];
+const WIFE_LINES=['Hann sagði þetta sama í gær. Og í fyrradag. Og daginn þar áður.','Ekki hlusta á hann. Hann æfði sig í allt gærkvöld.','Rólegur, elskan.','Fimmtugur og hagar sér eins og fimm ára.','Hann vaskar upp í viku ef hann tapar. Bara svo þú vitir.','Ég er búin að heyra þetta svo oft...','Elskan, gestirnir eiga líka að fá að vinna.'];
 const WIFE_MELT=['Loksins! Einhver varð að gera þetta.','Ég tek mynd af þessu. Fyrir jólakortið.','Ekki gráta, elskan. Það er afmælið þitt.'];
 function wife(text){
   if(current==='dance'&&dn.running)return;
   $('#wifeBubble').textContent=text;const w=$('#wife');w.classList.add('on');
   clearTimeout(wife._t);wife._t=setTimeout(()=>w.classList.remove('on'),4200);
 }
-function markWon(k){won[k]=1;$('#b'+k).classList.add('on');}
+function markWon(){}
 
 /* ---------- text ---------- */
 const GLOATS=['Sjáðu og grenjaðu, nýgræðingur!','Fimmtíu ár af æfingu, vinur.','Þetta var ekki einu sinni erfitt.','Aldrei vanmeta gamla manninn!','Þetta kallast hæfileikar.','Viltu vasaklút?','Ég myndi hneigja mig, en ég er of upptekinn við að vinna.','Á ég að kenna þér? Kostar ekkert... nema stoltið.','Skrifaðu þetta niður. Þetta er kennslustund.','Ég er eins og gott viskí. Betri með aldrinum.'];
@@ -337,8 +337,7 @@ function aiShot(){
 }
 function poolOver(){
   const {p,e}=pool.score;
-  if(p>e){markWon('Pool');say('pool','...');meltdown('pool','Áfram',()=>show('menu'));}
-  else say('pool',`Eysteinn vann ${e}–${p}. Hitti úr hverju einasta skoti. Auðvitað. Ýttu á „Byrja upp á nýtt“ ef þú þolir meira.`,true);
+  say('pool',`Eysteinn vann ${e}–${p}. Hitti úr hverju einasta skoti. Auðvitað. Ýttu á „Byrja upp á nýtt“ ef þú þolir meira.`,true);
 }
 function cpos(e){const r=pc.getBoundingClientRect();return{x:(e.clientX-r.left)*PW/r.width,y:(e.clientY-r.top)*PH/r.height};}
 pc.addEventListener('pointerdown',e=>{if(pool.turn!=='p'||pool.state!=='aim')return;ac();pool.drag=cpos(e);try{pc.setPointerCapture(e.pointerId)}catch(_){}e.preventDefault();});
@@ -432,7 +431,7 @@ $('#pkMain').onclick=()=>{
     if(pk.hand>=5){pokerReset();return;}
     pk.hand++;pk.cp-=5;pk.ce-=5;pk.pot=10;
     const last=pk.hand===5;
-    pk.deal=last?riggedDeal(true,0,2):riggedDeal(false,pk.hand>=2?1:0,0);
+    pk.deal=last?riggedDeal(false,2,6):riggedDeal(false,pk.hand>=2?1:0,0);
     renderRow('eCards',pk.deal.e,0);renderRow('board',pk.deal.b,0);renderRow('pCards',pk.deal.p,2);
     $('#pokerResult').textContent='';
     say('poker',last?'Síðasta höndin. Gerðu þig tilbúinn að kveðja peningana þína.':pick(['Gerðu þig tilbúinn að tapa.','Ég sé á svipnum á þér að þú ert með rusl.','Ég finn lyktina af sigri.','Póker er ekki heppni, vinur. Þetta er list.']));
@@ -448,7 +447,7 @@ $('#pkMain').onclick=()=>{
     if(c>0){pk.cp+=pk.pot;$('#pokerResult').textContent=`Þú vinnur með ${HAND_DAT[pk.deal.hp[0]]}! Eysteinn var með ${HAND_NOM[pk.deal.he[0]]}.`;}
     else{pk.ce+=pk.pot;$('#pokerResult').textContent=`Eysteinn vinnur með ${HAND_DAT[pk.deal.he[0]]}. Þú varst með ${HAND_NOM[pk.deal.hp[0]]}.`;say('poker',pick(GLOATS),true);}
     pk.pot=0;pk.stage=0;
-    if(pk.hand>=5){$('#pkMain').textContent='Spila aftur';if(c>0){markWon('Poker');say('poker','...');setTimeout(()=>meltdown('poker','Áfram',()=>show('menu')),900);}}
+    if(pk.hand>=5){$('#pkMain').textContent='Spila aftur';setTimeout(()=>say('poker','Fimm hendur, fimm sigrar. Eins og ég sagði: list.',true),2800);}
     else $('#pkMain').textContent='Næsta hönd';
   }
   pkInfo();
@@ -471,7 +470,7 @@ const LANE_COL=['#e85d9c','#0fa3b1','#2a9d3a','#f77f00'],ARR=['⬅','⬇','⬆',
 let dn={running:false,losses:0};
 function openDance(){sfxClick();show('dance');
   dn.running=false;$('#danceStart').classList.remove('hide');
-  $('#danceFinale').classList.toggle('hide',!(won.Dance||dn.losses>=2));
+  $('#danceFinale').classList.toggle('hide',!dn.done1);
   $('#danceAv').classList.add('dance');
   say('dance','Línudans? Ég er kóngurinn á dansgólfinu. Reyndu bara að halda í við mig.');
   dn.score=0;dn.escore=0;danceHud();drawDance(0);}
@@ -504,7 +503,7 @@ function songTime(){return AC.currentTime-dn.t0-(AC.outputLatency||0);}
 function danceLoop(){
   if(!dn.running)return;
   const t=songTime();
-  for(const n of dn.notes){if(!n.done&&t-n.t>0.16){n.done=true;dn.combo=0;dn.judge='Klúður!';dn.judgeT=t;dn.escore+=dn.eStep+(Math.random()*16-8);if(Math.random()<0.25)say('dance',pick(['Tveir vinstri fætur!','Hahaha! Ertu að dansa eða detta?','Taktinn, vinur. TAKTINN.']));}}
+  for(const n of dn.notes){if(!n.done&&t-n.t>0.16){n.done=true;dn.combo=0;dn.judge='Klúður!';dn.judgeT=t;dn.escore=Math.max(dn.escore+dn.eStep+(Math.random()*16-8),dn.score*1.08+40);if(Math.random()<0.25)say('dance',pick(['Tveir vinstri fætur!','Hahaha! Ertu að dansa eða detta?','Taktinn, vinur. TAKTINN.']));}}
   if(t-dn.lastTalk>BEAT*16&&t>0){dn.lastTalk=t;say('dance',pick(DANCE_TALK));}
   danceHud();drawDance(t);
   if(t>dn.end){finishDance();return;}
@@ -517,7 +516,7 @@ function hit(l){
   for(const n of dn.notes){if(n.done||n.l!==l)continue;const d=Math.abs(n.t-t);if(d<bd){bd=d;best=n;}}
   if(best&&bd<0.16){best.done=true;best.hit=true;const perfect=bd<0.07;
     dn.score+=(perfect?100:55)+dn.combo*2;dn.combo++;dn.judge=perfect?'Fullkomið!':'Gott!';dn.judgeT=t;
-    dn.escore+=dn.eStep+(Math.random()*16-8);}
+    dn.escore=Math.max(dn.escore+dn.eStep+(Math.random()*16-8),dn.score*1.08+40);}
 }
 function $$lane(l,on){const b=document.querySelectorAll('.lane')[l];b.classList.toggle('on',on);if(on){clearTimeout(b._t);b._t=setTimeout(()=>b.classList.remove('on'),120);}}
 document.querySelectorAll('.lane').forEach(b=>b.addEventListener('pointerdown',e=>{e.preventDefault();hit(+b.dataset.l);}));
@@ -537,10 +536,9 @@ function drawDance(t){
 }
 function finishDance(){
   dn.running=false;$('#danceStart').classList.remove('hide');$('#danceStart').textContent='Dansa aftur';
-  if(dn.score>dn.escore){markWon('Dance');say('dance','...');setTimeout(()=>meltdown('dance','Opna afmæliskveðjuna 🎂',openFinale),600);}
-  else{dn.losses++;
-    if(dn.losses>=2){say('dance','Æ, allt í lagi. Ég leyfi þér að opna kveðjuna... bara af því ég á afmæli.',true);$('#danceFinale').classList.remove('hide');}
-    else say('dance',`Eysteinn ${dn.escore|0}, þú ${dn.score|0}. Kóngurinn á dansgólfinu, vinur!`,true);}
+  if(dn.escore<=dn.score)dn.escore=dn.score*1.08+40;danceHud();dn.done1=true;
+  say('dance',`Eysteinn ${dn.escore|0}, þú ${dn.score|0}. Kóngurinn á dansgólfinu, vinur! Jæja, opnaðu nú afmæliskveðjuna mína.`,true);
+  $('#danceFinale').classList.remove('hide');
 }
 
 /* ==================== FINALE ==================== */
