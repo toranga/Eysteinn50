@@ -6,75 +6,78 @@
 <title>Saloon Eysteins – 50 ára</title>
 <link href="https://fonts.googleapis.com/css2?family=Rye&family=Roboto+Slab:wght@400;700&display=swap" rel="stylesheet">
 <style>
+html{font-size:clamp(16px,min(1.15vw,2vh),30px)}
 :root{--wood2:#5a3820;--cream:#f6e7c8;--gold:#e0a530;--red:#b8352a;--felt:#1f6b3a}
 *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
 html,body{margin:0;min-height:100%}
 body{background:repeating-linear-gradient(90deg,#3b2414 0 38px,#432916 38px 76px);color:var(--cream);font-family:'Roboto Slab',Georgia,serif;overflow-x:hidden;user-select:none;-webkit-user-select:none}
-.screen{display:none;min-height:100vh;padding:14px;max-width:900px;margin:0 auto;flex-direction:column;align-items:center;gap:10px}
+.screen{display:none;min-height:100vh;padding:14px;max-width:1400px;margin:0 auto;flex-direction:column;align-items:center;gap:10px}
 .screen.active{display:flex}
 h1,h2{font-family:'Rye',serif;color:var(--gold);text-shadow:2px 2px 0 #000;text-align:center;margin:6px 0}
 h1{font-size:clamp(30px,9vw,60px);line-height:1.1}
 h2{font-size:clamp(22px,6vw,34px)}
-.sub{font-size:18px;text-align:center;opacity:.92;max-width:520px}
-.btn{font-family:'Rye',serif;font-size:18px;background:var(--red);color:var(--cream);border:3px solid var(--gold);border-radius:10px;padding:11px 20px;cursor:pointer;box-shadow:0 4px 0 #000}
+.sub{font-size:1.125rem;text-align:center;opacity:.92;max-width:520px}
+.btn{font-family:'Rye',serif;font-size:1.125rem;background:var(--red);color:var(--cream);border:3px solid var(--gold);border-radius:10px;padding:.6em 1.1em;cursor:pointer;box-shadow:0 4px 0 #000}
 .btn:active{transform:translateY(3px);box-shadow:0 1px 0 #000}
 .btn.alt{background:var(--wood2)}
 .btn.hide{display:none}
 .row{display:flex;gap:10px;flex-wrap:wrap;justify-content:center}
-.menu-card{width:min(440px,100%);background:rgba(0,0,0,.35);border:3px solid var(--gold);border-radius:14px;padding:14px;cursor:pointer;text-align:left;color:var(--cream);font-family:inherit;font-size:15px;display:flex;gap:14px;align-items:center}
-.menu-card .ico{font-size:44px}
-.menu-card b{font-family:'Rye',serif;color:var(--gold);font-size:22px;display:block}
+.menu-card{width:min(440px,100%);background:rgba(0,0,0,.35);border:3px solid var(--gold);border-radius:14px;padding:14px;cursor:pointer;text-align:left;color:var(--cream);font-family:inherit;font-size:0.9375rem;display:flex;gap:14px;align-items:center}
+.menu-card .ico{font-size:2.75rem}
+.menu-card b{font-family:'Rye',serif;color:var(--gold);font-size:1.375rem;display:block}
 .badge{display:none;color:#8fe38f;font-weight:700}
 .badge.on{display:inline}
-.hero{display:flex;align-items:flex-end;gap:10px;width:min(560px,100%);min-height:80px}
+.hero{display:flex;align-items:flex-end;gap:10px;width:min(820px,100%);min-height:80px}
 .avatar svg,#meltAv svg{width:1.1em;height:1.26em;display:block}
 .talk svg{animation:talk .16s ease-in-out infinite alternate}
 @keyframes talk{from{transform:scaleY(1)}to{transform:scaleY(1.06) translateY(-2px)}}
-.avatar{font-size:58px;line-height:1;flex:none;filter:drop-shadow(2px 3px 0 #000);display:inline-block}
-.bubble{position:relative;background:var(--cream);color:#2a1a0c;border-radius:14px;padding:9px 13px;font-weight:700;font-size:16px;flex:1;min-height:46px;display:flex;align-items:center}
+.avatar{font-size:3.625rem;line-height:1;flex:none;filter:drop-shadow(2px 3px 0 #000);display:inline-block}
+.bubble{position:relative;background:var(--cream);color:#2a1a0c;border-radius:14px;padding:9px 13px;font-weight:700;font-size:1rem;flex:1;min-height:46px;display:flex;align-items:center}
 .bubble:before{content:'';position:absolute;left:-14px;bottom:14px;border:8px solid transparent;border-right-color:var(--cream)}
 .dance{animation:dance .54s ease-in-out infinite alternate}
 @keyframes dance{0%{transform:rotate(-14deg)}50%{transform:rotate(0) translateY(-14px) scale(1.12)}100%{transform:rotate(14deg)}}
-.hud{font-family:'Rye',serif;font-size:18px;display:flex;gap:18px;justify-content:center;flex-wrap:wrap;text-align:center}
-.hint{font-size:14px;opacity:.85;text-align:center}
+.hud{font-family:'Rye',serif;font-size:1.125rem;display:flex;gap:18px;justify-content:center;flex-wrap:wrap;text-align:center}
+.hint{font-size:0.875rem;opacity:.85;text-align:center}
 .rotate{display:none}
 @media (orientation:portrait) and (max-width:600px){.rotate{display:block}}
 canvas{display:block;max-width:100%;touch-action:none}
-#poolCanvas{width:100%;border-radius:12px;box-shadow:0 6px 0 #000}
-.felt{background:radial-gradient(ellipse at center,#2a8a4c,#16502b);border:10px solid #6b4220;border-radius:18px;padding:12px;width:min(560px,100%);display:flex;flex-direction:column;gap:10px;align-items:center;box-shadow:0 6px 0 #000}
-.lbl{font-family:'Rye',serif;font-size:14px;opacity:.85}
+#poolCanvas{width:min(100%,calc((100vh - 300px)*1.905),1300px);aspect-ratio:800/420;border-radius:12px;box-shadow:0 6px 0 #000}
+.felt{background:radial-gradient(ellipse at center,#2a8a4c,#16502b);border:10px solid #6b4220;border-radius:18px;padding:12px;width:min(820px,100%);display:flex;flex-direction:column;gap:10px;align-items:center;box-shadow:0 6px 0 #000}
+.lbl{font-family:'Rye',serif;font-size:0.875rem;opacity:.85}
 .cards{display:flex;gap:6px;min-height:80px;justify-content:center}
-.card{width:52px;height:76px;background:#fff;color:#111;border-radius:7px;display:flex;flex-direction:column;align-items:center;justify-content:center;font-weight:700;font-size:22px;box-shadow:2px 3px 0 rgba(0,0,0,.5);line-height:1}
-.card .s{font-size:24px}
+.card{width:clamp(52px,min(7vw,9vh),96px);aspect-ratio:52/76;height:auto;background:#fff;color:#111;border-radius:7px;display:flex;flex-direction:column;align-items:center;justify-content:center;font-weight:700;font-size:clamp(22px,min(3vw,3.8vh),40px);box-shadow:2px 3px 0 rgba(0,0,0,.5);line-height:1}
+.card .s{font-size:1.1em}
+.cards{min-height:0!important}
 .card.red{color:#c4161c}
 .card.back{background:repeating-linear-gradient(45deg,#8b1d1d 0 6px,#a83232 6px 12px);border:3px solid #fff}
 .card.flip{animation:flip .3s}
 @keyframes flip{from{transform:rotateY(90deg)}to{transform:rotateY(0)}}
 #pokerInfo{font-family:'Rye',serif;text-align:center}
 #pokerResult{min-height:26px;font-weight:700;text-align:center;color:var(--gold)}
-.duel{display:flex;gap:8px;width:min(390px,100%);align-items:flex-start}
+.duel{display:flex;gap:8px;width:max(300px,min(100%,calc(100vh - 420px),820px));align-items:flex-start}
 .dcol{display:flex;flex-direction:column;gap:6px;min-width:0}
 .dcol .lbl{text-align:center;font-family:'Rye',serif;color:var(--gold)}
+#danceCanvas{aspect-ratio:220/360}#eCanvas{aspect-ratio:130/360}
 #danceCanvas,#eCanvas{width:100%;border-radius:12px;background:#1b0f07;box-shadow:0 6px 0 #000}
 .lanes{display:grid;grid-template-columns:repeat(4,1fr);gap:4px;width:100%}
-.lane{font-size:24px;padding:12px 0;border-radius:10px;border:3px solid var(--gold);background:var(--wood2);color:var(--cream);touch-action:none}
+.lane{font-size:clamp(22px,3vw,40px);padding:clamp(10px,1.6vh,20px) 0;border-radius:10px;border:3px solid var(--gold);background:var(--wood2);color:var(--cream);touch-action:none}
 .lane.on{background:var(--gold);color:#000}
 #dance .hero{min-height:60px}
-#dance .hero .avatar{font-size:42px}
+#dance .hero .avatar{font-size:2.625rem}
 #eDancer.go{animation:dance var(--bd,.6s) ease-in-out infinite alternate}
 #wife{position:fixed;left:10px;bottom:12px;display:flex;align-items:flex-end;gap:8px;width:min(380px,92vw);z-index:9;transform:translateY(170%);transition:transform .35s;pointer-events:none}
 #wife.on{transform:none}
-#wife .avatar{font-size:64px}
+#wife .avatar{font-size:4rem}
 .pink{background:#ffd9dc!important}
 .pink:before{border-right-color:#ffd9dc!important}
 #overlay{position:fixed;inset:0;background:rgba(60,0,0,.92);display:none;flex-direction:column;align-items:center;justify-content:center;gap:16px;padding:20px;z-index:10;text-align:center}
 #overlay.on{display:flex}
-#meltAv{font-size:110px;animation:shake .12s infinite}
+#meltAv{font-size:6.875rem;animation:shake .12s infinite}
 @keyframes shake{0%{transform:translate(-4px,2px) rotate(-6deg)}50%{transform:translate(4px,-2px) rotate(6deg)}100%{transform:translate(-3px,3px) rotate(-4deg)}}
 #meltLine{font-family:'Rye',serif;font-size:clamp(22px,6vw,36px);color:#fff;min-height:2.6em;max-width:600px}
 #confetti{position:fixed;inset:0;pointer-events:none;z-index:0}
 #finale{position:relative;z-index:1;justify-content:center}
-.cake{font-size:90px;animation:dance .7s ease-in-out infinite alternate}
+.cake{font-size:5.625rem;animation:dance .7s ease-in-out infinite alternate}
 .big50{font-family:'Rye',serif;font-size:clamp(80px,26vw,160px);color:var(--gold);text-shadow:4px 4px 0 #000;line-height:1}
 </style>
 </head>
@@ -83,9 +86,9 @@ canvas{display:block;max-width:100%;touch-action:none}
 <!-- TITLE -->
 <section class="screen active" id="title">
   <div style="height:6vh"></div>
-  <div class="avatar dance" style="font-size:120px">🤠</div>
+  <div class="avatar dance" style="font-size:7.5rem">🤠</div>
   <h1>Saloon Eysteins</h1>
-  <div class="sub rye" style="font-family:'Rye',serif;font-size:22px;color:var(--cream)">Fimmtugur og enn ósigraður</div>
+  <div class="sub rye" style="font-family:'Rye',serif;font-size:1.375rem;color:var(--cream)">Fimmtugur og enn ósigraður</div>
   <p class="sub">Eysteinn hefur aldrei tapað. Hann hefur heldur aldrei unnið með reisn.<br>Getur þú sigrað hann á afmælisdaginn?<br><i>(Nei.)</i></p>
   <button class="btn" onclick="sfxClick();show('menu');voice('welcome',()=>{if(current==='menu')voice('menu')})">Byrja</button>
 </section>
@@ -144,7 +147,7 @@ canvas{display:block;max-width:100%;touch-action:none}
     <div class="dcol" style="flex:1">
       <div class="lbl">Eysteinn</div>
       <canvas id="eCanvas" width="130" height="360"></canvas>
-      <div class="avatar" id="eDancer" style="font-size:50px;margin:0 auto"></div>
+      <div class="avatar" id="eDancer" style="font-size:3.125rem;margin:0 auto"></div>
     </div>
   </div>
   <div class="row">
@@ -158,12 +161,12 @@ canvas{display:block;max-width:100%;touch-action:none}
 <!-- FINALE -->
 <section class="screen" id="finale">
   <div style="height:4vh"></div>
-  <div class="row" style="align-items:flex-end"><div class="avatar dance" style="font-size:100px">🤠</div><div class="cake">🎂</div><div class="avatar wifeav" style="font-size:100px"></div></div>
+  <div class="row" style="align-items:flex-end"><div class="avatar dance" style="font-size:6.25rem">🤠</div><div class="cake">🎂</div><div class="avatar wifeav" style="font-size:6.25rem"></div></div>
   <div class="big50">50</div>
   <h1>Til hamingju með fimmtugsafmælið, Eysteinn!</h1>
-  <p class="sub" style="font-size:20px">Fimmtíu ár. Enn ósigraður.<br><i>(Og verður það alltaf.)</i></p>
-  <div class="hero" style="width:min(460px,100%)"><div class="avatar wifeav" style="font-size:54px"></div><div class="bubble pink">Til hamingju, elskan! Þú ert bestur. Í öllu. Eins og þú minnir okkur á daglega. 💋</div></div>
-  <p class="sub" style="font-family:'Rye',serif;font-size:22px">Kveðja, Svavar<br><span style="font-size:16px;opacity:.85">Vibecode slop inc. 🤠🎱🃏👢</span></p>
+  <p class="sub" style="font-size:1.25rem">Fimmtíu ár. Enn ósigraður.<br><i>(Og verður það alltaf.)</i></p>
+  <div class="hero" style="width:min(460px,100%)"><div class="avatar wifeav" style="font-size:3.375rem"></div><div class="bubble pink">Til hamingju, elskan! Þú ert bestur. Í öllu. Eins og þú minnir okkur á daglega. 💋</div></div>
+  <p class="sub" style="font-family:'Rye',serif;font-size:1.375rem">Kveðja, Svavar<br><span style="font-size:1rem;opacity:.85">Vibecode slop inc. 🤠🎱🃏👢</span></p>
   <button class="btn" onclick="show('menu')">Aftur í Saloon-ið</button>
 </section>
 <canvas id="confetti"></canvas>
@@ -175,7 +178,7 @@ canvas{display:block;max-width:100%;touch-action:none}
   <h1 id="meltTitle">Þú vannst Eystein!</h1>
   <div id="meltAv">😤</div>
   <div id="meltLine"></div>
-  <div class="hero" style="width:min(420px,100%)"><div class="avatar wifeav" style="font-size:70px"></div><div class="bubble pink" id="meltWife"></div></div>
+  <div class="hero" style="width:min(420px,100%)"><div class="avatar wifeav" style="font-size:4.375rem"></div><div class="bubble pink" id="meltWife"></div></div>
   <button class="btn" id="meltBtn">Áfram</button>
 </div>
 
@@ -271,6 +274,13 @@ function meltdown(kind,btnText,onDone){
   $('#overlay').classList.add('on');
 }
 
+/* ---------- sharp canvases: draw at the screen's real resolution ---------- */
+function fitCanvas(cv,LW,LH){
+  const r=cv.getBoundingClientRect();if(!r.width)return cv.getContext('2d');
+  const dpr=Math.min(window.devicePixelRatio||1,3),w=Math.round(r.width*dpr),h=Math.round(r.width*LH/LW*dpr);
+  if(cv.width!==w||cv.height!==h){cv.width=w;cv.height=h;}
+  const g=cv.getContext('2d');g.setTransform(w/LW,0,0,h/LH,0,0);return g;
+}
 /* ==================== POOL ==================== */
 const KF=1/(1-0.986);
 const PW=800,PH=420,B=26,R=11,FR=0.986;
@@ -384,7 +394,7 @@ function release(){
 }
 pc.addEventListener('pointerup',release);pc.addEventListener('pointercancel',()=>pool.drag=null);
 function drawPool(){
-  const g=px;g.clearRect(0,0,PW,PH);
+  const g=fitCanvas(pc,PW,PH);g.clearRect(0,0,PW,PH);
   g.fillStyle='#6b4220';g.fillRect(0,0,PW,PH);
   g.fillStyle='#1f7a40';g.fillRect(B,B,PW-2*B,PH-2*B);
   g.strokeStyle='rgba(255,255,255,.12)';g.beginPath();g.moveTo(B+(PW-2*B)*0.25,B);g.lineTo(B+(PW-2*B)*0.25,PH-B);g.stroke();
@@ -620,11 +630,13 @@ function board(g,W,t,flash,rad,isE){
     g.fillStyle='#fff';g.font=(rad+2)+'px sans-serif';g.fillText(ARR[n.l],x,y+1);}
 }
 function drawDance(t){
+  fitCanvas(dc,DW,DH);
   board(dx,DW,t,dn.press||[-9,-9,-9,-9],20,false);
   if(dn.judge&&t-dn.judgeT<0.6){dx.font='24px Rye, serif';dx.fillStyle=dn.judge==='Klúður!'?'#ff6b5b':'#ffe08a';dx.fillText(dn.judge,DW/2,HIT-110);}
   if(dn.running&&t<0&&t>-2.4){dx.font='56px Rye, serif';dx.fillStyle='#ffe08a';dx.fillText(Math.ceil(-t/0.6),DW/2,DH/2-40);}
 }
 function drawE(t){
+  fitCanvas(ec,EW,DH);
   board(ex,EW,t,dn.eFlash||[-9,-9,-9,-9],12,true);
   if(dn.running&&t>0&&dn.eFlash.some(f=>t-f<0.4)){ex.font='15px Rye, serif';ex.fillStyle='#ffe08a';ex.fillText('Fullkomið!',EW/2,HIT-70);}
   if(dn.running&&dn.ecombo>2){ex.font='13px Rye, serif';ex.fillStyle='#f6e7c8';ex.fillText('x'+dn.ecombo+' í röð',EW/2,24);}
@@ -642,16 +654,17 @@ function finishDance(){
 const cc=$('#confetti'),cx=cc.getContext('2d');let conf=[],confOn=false;
 function openFinale(){show('finale');sfxFanfare();startConfetti();}
 function startConfetti(){
-  cc.width=innerWidth;cc.height=innerHeight;conf=[];
-  for(let i=0;i<160;i++)conf.push({x:Math.random()*cc.width,y:-Math.random()*cc.height,vy:1.5+Math.random()*3,vx:Math.random()*2-1,r:Math.random()*6,s:4+Math.random()*6,c:pick(['#e0a530','#b8352a','#f6e7c8','#2a9d3a','#0fa3b1','#e85d9c'])});
+  sizeConf();conf=[];
+  for(let i=0;i<160;i++)conf.push({x:Math.random()*innerWidth,y:-Math.random()*innerHeight,vy:1.5+Math.random()*3,vx:Math.random()*2-1,r:Math.random()*6,s:4+Math.random()*6,c:pick(['#e0a530','#b8352a','#f6e7c8','#2a9d3a','#0fa3b1','#e85d9c'])});
   if(!confOn){confOn=true;requestAnimationFrame(confLoop);}
 }
-function stopConfetti(){confOn=false;cx.clearRect(0,0,cc.width,cc.height);}
-function confLoop(){if(!confOn)return;cx.clearRect(0,0,cc.width,cc.height);
-  for(const p of conf){p.y+=p.vy;p.x+=p.vx;p.r+=0.08;if(p.y>cc.height+10){p.y=-10;p.x=Math.random()*cc.width;}
+function stopConfetti(){confOn=false;cx.clearRect(0,0,innerWidth,innerHeight);}
+function sizeConf(){const d=Math.min(devicePixelRatio||1,3);cc.width=innerWidth*d;cc.height=innerHeight*d;cc.style.width=innerWidth+'px';cc.style.height=innerHeight+'px';cx.setTransform(d,0,0,d,0,0);}
+function confLoop(){if(!confOn)return;cx.clearRect(0,0,innerWidth,innerHeight);
+  for(const p of conf){p.y+=p.vy;p.x+=p.vx;p.r+=0.08;if(p.y>innerHeight+10){p.y=-10;p.x=Math.random()*innerWidth;}
     cx.save();cx.translate(p.x,p.y);cx.rotate(p.r);cx.fillStyle=p.c;cx.fillRect(-p.s/2,-p.s/4,p.s,p.s/2);cx.restore();}
   requestAnimationFrame(confLoop);}
-addEventListener('resize',()=>{if(confOn){cc.width=innerWidth;cc.height=innerHeight;}});
+addEventListener('resize',()=>{if(confOn)sizeConf();if(current==='dance'&&!dn.running){drawDance(0);drawE(0);}});
 </script>
 </body>
 </html>
