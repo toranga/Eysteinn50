@@ -398,6 +398,32 @@ function eval5(cs){
 function cmpH(a,b){for(let i=0;i<Math.max(a.length,b.length);i++){const d=(a[i]||0)-(b[i]||0);if(d)return d;}return 0;}
 function best7(cs){let best=null;for(let i=0;i<7;i++)for(let j=i+1;j<7;j++){const v=eval5(cs.filter((_,k)=>k!==i&&k!==j));if(!best||cmpH(v,best)>0)best=v;}return best;}
 function newDeck(){const d=[];for(const s of SUITS)for(let r=2;r<=14;r++)d.push({r,s});for(let i=d.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[d[i],d[j]]=[d[j],d[i]];}return d;}
+const ri=(a,b)=>a+Math.floor(Math.random()*(b-a+1));
+function suitPerm(){const a=[...SUITS];for(let i=3;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]];}return a;}
+function otherRank(...not){let r;do{r=ri(2,14)}while(not.includes(r));return r;}
+// Each hand: you get something great, Eysteinn gets something greater. [rank,suit]; null rank = random card (of that suit if given)
+const SCRIPT=[
+  ()=>{const S=suitPerm(),x=ri(2,8);return{P:4,p:[[x,S[1]],[x+4,S[2]]],e:[[14,S[0]],[otherRank(14,x,x+1,x+2,x+3,x+4),S[0]]],b:[[x+1,S[0]],[x+2,S[0]],[x+3,S[1]],[null,S[0]],null]};}, // straight vs flush
+  ()=>{const S=suitPerm(),a=ri(2,14),b=otherRank(a),c=otherRank(a,b);return{P:5,p:[[null,S[0]],[null,S[0]]],e:[[a,S[2]],[b,S[1]]],b:[[a,S[0]],[a,S[1]],[b,S[0]],[c,S[0]],null]};}, // flush vs full house
+  ()=>{const S=suitPerm(),hi=ri(4,14),lo=ri(2,hi-1),j=otherRank(hi,lo);return{P:6,p:[[lo,S[1]],[lo,S[2]]],e:[[hi,S[2]],[j,S[0]]],b:[[hi,S[0]],[hi,S[1]],[lo,S[0]],[j,S[3]],null]};}, // full house vs bigger full house
+  ()=>{const S=suitPerm(),q=ri(2,13);return{P:6,p:[[14,S[2]],[otherRank(14,q),S[3]]],e:[[q,S[2]],[q,S[3]]],b:[[14,S[0]],[14,S[1]],[q,S[0]],[q,S[1]],null]};}, // aces full vs four of a kind
+  ()=>{const S=suitPerm();return{P:7,p:[[13,S[2]],[13,S[3]]],e:[[14,S[0]],[10,S[0]]],b:[[13,S[0]],[12,S[0]],[11,S[0]],[13,S[1]],null]};} // four kings vs royal flush
+];
+function buildDeal(t){
+  const used=new Set(),all=[];for(const s of SUITS)for(let r=2;r<=14;r++)all.push({r,s});
+  for(const c of [...t.p,...t.e,...t.b]){if(c&&c[0]!=null){const k=c[0]+c[1];if(used.has(k))return null;used.add(k);}}
+  const conv=c=>{if(c&&c[0]!=null)return{r:c[0],s:c[1]};const opts=all.filter(x=>!used.has(x.r+x.s)&&(!c||x.s===c[1]));const x=pick(opts);used.add(x.r+x.s);return x;};
+  const p=t.p.map(conv),e=t.e.map(conv),b=t.b.map(conv);
+  for(let i=b.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[b[i],b[j]]=[b[j],b[i]];}
+  return{p,e,b,P:t.P};
+}
+function scriptedDeal(h){
+  for(let t=0;t<500;t++){const d=buildDeal(SCRIPT[h]());if(!d)continue;
+    d.hp=best7([...d.p,...d.b]);d.he=best7([...d.e,...d.b]);
+    if(d.hp[0]>=d.P&&cmpH(d.he,d.hp)>0)return d;}
+  return riggedDeal(false,1,0);
+}
+function handName(h,dat){if(h[0]===8&&h[1]===14)return dat?'konunglegri litaröð':'konunglega litaröð';return(dat?HAND_DAT:HAND_NOM)[h[0]];}
 function riggedDeal(playerWins,minP,minE){
   let last;
   for(let t=0;t<30000;t++){
@@ -408,6 +434,7 @@ function riggedDeal(playerWins,minP,minE){
   }
   return last;
 }
+const POKER_WIN=['Fallegt spil hjá þér. Synd að það dugði ekki.','Þú varst svo nálægt! Nei, reyndar ekki.','Ég sá svipinn á þér. Þú hélst að þú værir með þetta.','Gott spil. Mitt var bara betra. Eins og alltaf.','Sjáðu og grenjaðu, nýgræðingur!'];
 let pk={};
 function openPoker(){sfxClick();show('poker');pokerReset();}
 function pokerReset(){
@@ -431,7 +458,7 @@ $('#pkMain').onclick=()=>{
     if(pk.hand>=5){pokerReset();return;}
     pk.hand++;pk.cp-=5;pk.ce-=5;pk.pot=10;
     const last=pk.hand===5;
-    pk.deal=last?riggedDeal(false,2,6):riggedDeal(false,pk.hand>=2?1:0,0);
+    pk.deal=scriptedDeal(pk.hand-1);
     renderRow('eCards',pk.deal.e,0);renderRow('board',pk.deal.b,0);renderRow('pCards',pk.deal.p,2);
     $('#pokerResult').textContent='';
     say('poker',last?'Síðasta höndin. Gerðu þig tilbúinn að kveðja peningana þína.':pick(['Gerðu þig tilbúinn að tapa.','Ég sé á svipnum á þér að þú ert með rusl.','Ég finn lyktina af sigri.','Póker er ekki heppni, vinur. Þetta er list.']));
@@ -445,7 +472,7 @@ $('#pkMain').onclick=()=>{
     renderRow('eCards',pk.deal.e,2);$('#pkFold').classList.add('hide');
     const c=cmpH(pk.deal.hp,pk.deal.he);
     if(c>0){pk.cp+=pk.pot;$('#pokerResult').textContent=`Þú vinnur með ${HAND_DAT[pk.deal.hp[0]]}! Eysteinn var með ${HAND_NOM[pk.deal.he[0]]}.`;}
-    else{pk.ce+=pk.pot;$('#pokerResult').textContent=`Eysteinn vinnur með ${HAND_DAT[pk.deal.he[0]]}. Þú varst með ${HAND_NOM[pk.deal.hp[0]]}.`;say('poker',pick(GLOATS),true);}
+    else{pk.ce+=pk.pot;$('#pokerResult').textContent=`Eysteinn vinnur með ${handName(pk.deal.he,1)}. Þú varst með ${handName(pk.deal.hp,0)}.`;say('poker',pk.hand===5?'Konungleg litaröð. Á afmælisdaginn. Þetta kallast örlög, vinur.':pick(POKER_WIN),true);}
     pk.pot=0;pk.stage=0;
     if(pk.hand>=5){$('#pkMain').textContent='Spila aftur';setTimeout(()=>say('poker','Fimm hendur, fimm sigrar. Eins og ég sagði: list.',true),2800);}
     else $('#pkMain').textContent='Næsta hönd';
