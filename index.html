@@ -50,12 +50,16 @@ canvas{display:block;max-width:100%;touch-action:none}
 @keyframes flip{from{transform:rotateY(90deg)}to{transform:rotateY(0)}}
 #pokerInfo{font-family:'Rye',serif;text-align:center}
 #pokerResult{min-height:26px;font-weight:700;text-align:center;color:var(--gold)}
-#danceCanvas{width:min(360px,94vw);border-radius:12px;background:#1b0f07;box-shadow:0 6px 0 #000}
-.lanes{display:grid;grid-template-columns:repeat(4,1fr);gap:6px;width:min(360px,94vw)}
-.lane{font-size:30px;padding:12px 0;border-radius:10px;border:3px solid var(--gold);background:var(--wood2);color:var(--cream);touch-action:none}
+.duel{display:flex;gap:8px;width:min(390px,100%);align-items:flex-start}
+.dcol{display:flex;flex-direction:column;gap:6px;min-width:0}
+.dcol .lbl{text-align:center;font-family:'Rye',serif;color:var(--gold)}
+#danceCanvas,#eCanvas{width:100%;border-radius:12px;background:#1b0f07;box-shadow:0 6px 0 #000}
+.lanes{display:grid;grid-template-columns:repeat(4,1fr);gap:4px;width:100%}
+.lane{font-size:24px;padding:12px 0;border-radius:10px;border:3px solid var(--gold);background:var(--wood2);color:var(--cream);touch-action:none}
 .lane.on{background:var(--gold);color:#000}
-#dance .hero{min-height:64px}
-#dance .avatar{font-size:46px}
+#dance .hero{min-height:60px}
+#dance .hero .avatar{font-size:42px}
+#eDancer.go{animation:dance var(--bd,.6s) ease-in-out infinite alternate}
 #wife{position:fixed;left:10px;bottom:12px;display:flex;align-items:flex-end;gap:8px;width:min(380px,92vw);z-index:9;transform:translateY(170%);transition:transform .35s;pointer-events:none}
 #wife.on{transform:none}
 #wife .avatar{font-size:64px}
@@ -127,16 +131,26 @@ canvas{display:block;max-width:100%;touch-action:none}
   <h2 style="margin:2px 0">👢 Línudans-einvígi</h2>
   <div class="hero"><div class="avatar" id="danceAv">🤠</div><div class="bubble" id="danceBubble"></div></div>
   <div class="hud" id="danceHud"></div>
-  <canvas id="danceCanvas" width="360" height="420"></canvas>
-  <div class="lanes" id="lanes">
-    <button class="lane" data-l="0">⬅</button><button class="lane" data-l="1">⬇</button><button class="lane" data-l="2">⬆</button><button class="lane" data-l="3">➡</button>
+  <div class="duel">
+    <div class="dcol" style="flex:1.7">
+      <div class="lbl">Þú</div>
+      <canvas id="danceCanvas" width="220" height="360"></canvas>
+      <div class="lanes" id="lanes">
+        <button class="lane" data-l="0">⬅</button><button class="lane" data-l="1">⬇</button><button class="lane" data-l="2">⬆</button><button class="lane" data-l="3">➡</button>
+      </div>
+    </div>
+    <div class="dcol" style="flex:1">
+      <div class="lbl">Eysteinn</div>
+      <canvas id="eCanvas" width="130" height="360"></canvas>
+      <div class="avatar" id="eDancer" style="font-size:50px;margin:0 auto"></div>
+    </div>
   </div>
   <div class="row">
     <button class="btn" id="danceStart" onclick="startDance()">Byrja dansinn</button>
     <button class="btn hide" id="danceFinale" onclick="openFinale()">Opna afmæliskveðjuna 🎂</button>
     <button class="btn alt" onclick="show('menu')">Til baka</button>
   </div>
-  <div class="hint">Ýttu á örvarnar þegar þær lenda á gullnu línunni. Á lyklaborði: örvatakkar.</div>
+  <div class="hint">Ýttu á örvarnar þegar þær lenda á gullnu línunni. Lagið hraðar á sér í hverri lotu. Á lyklaborði: örvatakkar.</div>
 </section>
 
 <!-- FINALE -->
@@ -488,83 +502,115 @@ $('#pkFold').onclick=()=>{
 };
 
 /* ==================== LINE DANCE ==================== */
-const BPM=112,BEAT=60/BPM,BARS=16,FALL=1.7;
-const MEL=[[67,0,71,74,76,74,71,0],[76,76,74,0,72,0,67,0],[71,74,79,0,76,74,71,69],[69,0,66,69,74,0,0,0],[67,0,71,74,76,0,79,0],[79,76,74,72,76,0,72,0],[74,0,69,0,66,69,74,72],[71,0,67,0,67,0,0,0]];
-const CH=[[49,73.42],[65.41,49],[49,73.42],[73.42,55],[49,73.42],[65.41,49],[73.42,55],[49,73.42]];
-const DANCE_TALK=['Sjáðu mjaðmirnar!','Stígvélin mín eru eldri en þú!','Þetta kallast stíll, vinur.','Jíííhaaa!','Ég dansaði svona á Broadway. Eða í Borgarnesi. Sama hvað.','Tveir vinstri fætur, sé ég.'];
-const dc=$('#danceCanvas'),dx=dc.getContext('2d'),DW=360,DH=420,HIT=360;
+// Original country hoedown in G that speeds up every bar until nobody (except Eysteinn) can keep up.
+const MAXBARS=44,FALL=1.6;
+const PROG=['G','C','G','D','G','C','D','G'];
+const CHORD={G:{bass:[43,38],strum:[55,59,62],roll:[67,71,74]},C:{bass:[36,43],strum:[48,52,55],roll:[67,72,76]},D:{bass:[38,45],strum:[50,54,57],roll:[66,69,74]}};
+const ROLL=[0,1,2,0,1,2,0,2];
+const MEL=[[74,74,76,74,71,0,67,69],[72,0,72,74,76,0,74,72],[71,0,67,71,74,0,79,0],[78,76,74,0,69,0,0,0],[74,74,76,74,71,0,67,69],[72,0,76,0,79,77,76,72],[74,0,69,71,72,74,66,0],[67,0,0,0,67,71,74,79]];
+const SPEED_TALK={4:'Jæja, hitum aðeins upp.',8:'Aðeins hraðar núna!',12:'Ertu ennþá með, vinur?',16:'JÍHAAA! Nú byrjar alvöru dansinn!',20:'Ég gæti þetta sofandi.',24:'Hraðar! HRAÐAR!',28:'Fæturnir mínir eru orðnir að þoku!'};
+const dc=$('#danceCanvas'),dx=dc.getContext('2d'),DW=220,DH=360,HIT=305;
+const ec=$('#eCanvas'),ex=ec.getContext('2d'),EW=130;
 const LANE_COL=['#e85d9c','#0fa3b1','#2a9d3a','#f77f00'],ARR=['⬅','⬇','⬆','➡'];
-let dn={running:false,losses:0};
+let dn={running:false};
+const midiF=m=>440*Math.pow(2,(m-69)/12);
+function fiddle(midi,t,dur,dest){const c=ac(),o=c.createOscillator(),f=c.createBiquadFilter(),g=c.createGain(),l=c.createOscillator(),lg=c.createGain();
+  o.type='sawtooth';o.frequency.setValueAtTime(midiF(midi)*0.97,t);o.frequency.exponentialRampToValueAtTime(midiF(midi),t+0.03);
+  l.frequency.value=5.5;lg.gain.value=midiF(midi)*0.008;l.connect(lg).connect(o.frequency);
+  f.type='lowpass';f.frequency.value=2600;f.Q.value=1;
+  const d=Math.max(0.04,dur);g.gain.setValueAtTime(0.0001,t);g.gain.linearRampToValueAtTime(0.09,t+Math.min(0.03,d/3));g.gain.setValueAtTime(0.09,t+d*0.7);g.gain.linearRampToValueAtTime(0.0001,t+d);
+  o.connect(f).connect(g).connect(dest);o.start(t);o.stop(t+d+0.02);l.start(t);l.stop(t+d+0.02);}
+function banjo(midi,t,dest){const c=ac(),o=c.createOscillator(),f=c.createBiquadFilter(),g=c.createGain();o.type='square';o.frequency.value=midiF(midi);f.type='bandpass';f.frequency.value=midiF(midi)*2;f.Q.value=1.2;env(g,t,0.06,0.14);o.connect(f).connect(g).connect(dest);o.start(t);o.stop(t+0.18);}
+function strum(notes,t,dest){notes.forEach((m,i)=>{const c=ac(),o=c.createOscillator(),g=c.createGain();o.type='triangle';o.frequency.value=midiF(m);env(g,t+i*0.008,0.12,0.12);o.connect(g).connect(dest);o.start(t+i*0.008);o.stop(t+0.2);});}
+function buildBeats(t0){const beats=[];let t=t0;
+  for(let bar=0;bar<MAXBARS;bar++){const bpm=bar<4?100:Math.min(100*Math.pow(1.075,bar-3),1500),bd=60/bpm;
+    for(let b=0;b<4;b++){beats.push({t,bar,b,bd,bpm});t+=bd;}}
+  return beats;}
+function scheduleBeat(B,m){
+  const mi=B.bar%8,ch=CHORD[PROG[mi]],t=B.t,bd=B.bd;
+  if(B.b%2===0){kick(t,m);tone('triangle',midiF(ch.bass[B.b/2]),t,Math.min(0.3,bd*0.9),0.45,m);}
+  else{snare(t,m,0.2);strum(ch.strum,t,m);}
+  snare(t+bd/2,m,0.07);
+  for(let h=0;h<2;h++){const k=B.b*2+h,tt=t+h*bd/2;
+    banjo(ch.roll[ROLL[k]],tt,m);
+    if(B.bar>=2&&MEL[mi][k])fiddle(MEL[mi][k],tt,bd/2*0.95,m);}
+}
 function openDance(){sfxClick();show('dance');
-  dn.running=false;$('#danceStart').classList.remove('hide');
+  dn.running=false;$('#danceStart').classList.remove('hide');$('#danceStart').textContent='Byrja dansinn';
   $('#danceFinale').classList.toggle('hide',!dn.done1);
-  $('#danceAv').classList.add('dance');
+  $('#eDancer').classList.remove('go');
   say('dance','Línudans? Ég er kóngurinn á dansgólfinu. Reyndu bara að halda í við mig.');
-  dn.score=0;dn.escore=0;danceHud();drawDance(0);}
-function danceHud(){$('#danceHud').innerHTML=`<span>Þú: ${dn.score|0}</span><span>Eysteinn: ${dn.escore|0}</span>${dn.combo>2?`<span>x${dn.combo} í röð</span>`:''}`;}
+  dn.score=0;dn.escore=0;dn.combo=0;dn.bpm=100;danceHud();drawDance(0);drawE(0);}
+function danceHud(){$('#danceHud').innerHTML=`<span>Þú: ${dn.score|0}</span><span>Eysteinn: ${dn.escore|0}</span><span>🎵 ${Math.round(dn.bpm||100)} BPM</span>`;}
 function startDance(){
-  const c=ac();sfxClick();
-  if(dn.master){try{dn.master.disconnect()}catch(e){}}
+  const c=ac();sfxClick();stopDance();
   const m=c.createGain();m.gain.value=0.7;m.connect(c.destination);
-  const t0=c.currentTime+2.4;
-  for(let k=0;k<4;k++)tone('square',k===0?1320:880,t0-(4-k)*BEAT,0.05,0.12,m);
+  const t0=c.currentTime+2.6,beats=buildBeats(t0);
+  for(let k=0;k<4;k++)tone('square',k===0?1320:880,t0-(4-k)*0.6,0.05,0.12,m);
   const notes=[];
-  for(let bar=0;bar<BARS;bar++){const mi=bar%8;
-    for(let b=0;b<4;b++){const t=t0+(bar*4+b)*BEAT;
-      if(b%2===0){kick(t,m);tone('triangle',CH[mi][b/2]*2,t,0.3,0.45,m);} else {snare(t,m,0.28);}
-    }
-    for(let k=0;k<8;k++){const mid=MEL[mi][k];if(mid)pluck(mid,t0+(bar*4+k/2)*BEAT,m);}
-    for(let b=0;b<4;b++){const rel=(bar*4+b)*BEAT;
-      if(bar<2){if(b%2===0)notes.push({t:rel,l:(bar*2+b/2)%4});continue;}
-      const mid=MEL[mi][b*2];if(mid)notes.push({t:rel,l:mid%4});
-      if(bar>=8&&b===3&&MEL[mi][7])notes.push({t:rel+BEAT/2,l:(MEL[mi][7]+1)%4});
-    }
-  }
-  Object.assign(dn,{running:true,master:m,t0,notes,score:0,escore:0,combo:0,judge:'',judgeT:-9,eStep:58,lastTalk:0,press:[-9,-9,-9,-9],end:notes[notes.length-1].t+1.3});
+  beats.forEach((B,i)=>{if(B.bar<2&&B.b%2)return;
+    const mid=MEL[B.bar%8][B.b*2];notes.push({t:B.t-t0,l:mid?mid%4:(i*3+B.bar)%4,bar:B.bar});});
+  Object.assign(dn,{running:true,master:m,t0,beats,next:0,notes,score:0,escore:0,combo:0,ecombo:0,miss:0,judge:'',judgeT:-9,eFlash:[-9,-9,-9,-9],press:[-9,-9,-9,-9],talked:{},bpm:100,end:notes[notes.length-1].t+1});
+  dn.timer=setInterval(()=>{while(dn.next<dn.beats.length&&dn.beats[dn.next].t<AC.currentTime+0.3){scheduleBeat(dn.beats[dn.next],m);dn.next++;}},25);
   $('#danceStart').classList.add('hide');$('#danceFinale').classList.add('hide');
+  $('#eDancer').classList.add('go');
   say('dance','Fimm, sex, sjö, átta... JÍHAA!');
   requestAnimationFrame(danceLoop);
 }
-function stopDance(){dn.running=false;if(dn.master){try{dn.master.disconnect()}catch(e){}dn.master=null;}}
+function stopDance(){dn.running=false;clearInterval(dn.timer);if(dn.master){try{dn.master.disconnect()}catch(e){}dn.master=null;}}
 function songTime(){return AC.currentTime-dn.t0-(AC.outputLatency||0);}
 function danceLoop(){
   if(!dn.running)return;
-  const t=songTime();
-  for(const n of dn.notes){if(!n.done&&t-n.t>0.16){n.done=true;dn.combo=0;dn.judge='Klúður!';dn.judgeT=t;dn.escore=Math.max(dn.escore+dn.eStep+(Math.random()*16-8),dn.score*1.08+40);if(Math.random()<0.25)say('dance',pick(['Tveir vinstri fætur!','Hahaha! Ertu að dansa eða detta?','Taktinn, vinur. TAKTINN.']));}}
-  if(t-dn.lastTalk>BEAT*16&&t>0){dn.lastTalk=t;say('dance',pick(DANCE_TALK));}
-  danceHud();drawDance(t);
-  if(t>dn.end){finishDance();return;}
+  const t=songTime(),abs=t+dn.t0;
+  const cur=dn.beats.find(B=>B.t+B.bd>abs)||dn.beats[dn.beats.length-1];
+  dn.bpm=cur.bpm;$('#eDancer').style.setProperty('--bd',Math.max(0.12,cur.bd)+'s');
+  if(SPEED_TALK[cur.bar]&&!dn.talked[cur.bar]){dn.talked[cur.bar]=1;say('dance',SPEED_TALK[cur.bar],true);}
+  for(const n of dn.notes){
+    if(!n.eDone&&t>=n.t){n.eDone=true;dn.escore+=100+dn.ecombo*2;dn.ecombo++;dn.eFlash[n.l]=t;}
+    if(!n.done&&t-n.t>0.15){n.done=true;dn.combo=0;dn.miss++;dn.judge='Klúður!';dn.judgeT=t;
+      if(Math.random()<0.12)say('dance',pick(['Tveir vinstri fætur!','Hahaha! Ertu að dansa eða detta?','Taktinn, vinur. TAKTINN.','Of hratt fyrir þig?']));}
+  }
+  danceHud();drawDance(t);drawE(t);
+  if(t>dn.end||(cur.bar>=10&&dn.miss>=14)){finishDance();return;}
   requestAnimationFrame(danceLoop);
 }
 function hit(l){
   $$lane(l,true);
   if(!dn.running)return;
   const t=songTime();dn.press[l]=t;let best=null,bd=9;
-  for(const n of dn.notes){if(n.done||n.l!==l)continue;const d=Math.abs(n.t-t);if(d<bd){bd=d;best=n;}}
-  if(best&&bd<0.16){best.done=true;best.hit=true;const perfect=bd<0.07;
-    dn.score+=(perfect?100:55)+dn.combo*2;dn.combo++;dn.judge=perfect?'Fullkomið!':'Gott!';dn.judgeT=t;
-    dn.escore=Math.max(dn.escore+dn.eStep+(Math.random()*16-8),dn.score*1.08+40);}
+  for(const n of dn.notes){if(n.done||n.l!==l)continue;const d=Math.abs(n.t-t);if(d<bd){bd=d;best=n;}if(n.t-t>0.3)break;}
+  if(best&&bd<0.15){best.done=true;const perfect=bd<0.07;
+    dn.score+=(perfect?100:55)+dn.combo*2;dn.combo++;dn.miss=0;dn.judge=perfect?'Fullkomið!':'Gott!';dn.judgeT=t;}
 }
 function $$lane(l,on){const b=document.querySelectorAll('.lane')[l];b.classList.toggle('on',on);if(on){clearTimeout(b._t);b._t=setTimeout(()=>b.classList.remove('on'),120);}}
 document.querySelectorAll('.lane').forEach(b=>b.addEventListener('pointerdown',e=>{e.preventDefault();hit(+b.dataset.l);}));
 document.addEventListener('keydown',e=>{if(current!=='dance'||e.repeat)return;const m={ArrowLeft:0,ArrowDown:1,ArrowUp:2,ArrowRight:3,KeyD:0,KeyF:1,KeyJ:2,KeyK:3}[e.code];if(m!==undefined){e.preventDefault();hit(m);}});
-function drawDance(t){
-  const g=dx,lw=DW/4;g.clearRect(0,0,DW,DH);
+function board(g,W,t,flash,rad,isE){
+  const lw=W/4;g.clearRect(0,0,W,DH);
   for(let l=0;l<4;l++){g.fillStyle=l%2?'#24140a':'#2c190d';g.fillRect(l*lw,0,lw,DH);
-    if(dn.press&&t-dn.press[l]<0.12){g.fillStyle='rgba(224,165,48,.25)';g.fillRect(l*lw,0,lw,DH);}}
-  g.fillStyle='#e0a530';g.fillRect(0,HIT-3,DW,6);
+    if(t-flash[l]<0.12&&t-flash[l]>=0){g.fillStyle='rgba(224,165,48,.3)';g.fillRect(l*lw,0,lw,DH);}}
+  g.fillStyle='#e0a530';g.fillRect(0,HIT-3,W,6);
   g.textAlign='center';g.textBaseline='middle';
-  for(let l=0;l<4;l++){g.strokeStyle='rgba(246,231,200,.5)';g.lineWidth=2;g.beginPath();g.arc(l*lw+lw/2,HIT,24,0,7);g.stroke();}
-  if(dn.notes)for(const n of dn.notes){if(n.done)continue;const y=HIT-(n.t-t)*(HIT+40)/FALL;if(y<-40||y>DH+40)continue;
-    const x=n.l*lw+lw/2;g.fillStyle=LANE_COL[n.l];g.beginPath();g.arc(x,y,24,0,7);g.fill();g.strokeStyle='#fff';g.lineWidth=3;g.stroke();
-    g.fillStyle='#fff';g.font='26px sans-serif';g.fillText(ARR[n.l],x,y+1);}
-  if(dn.judge&&t-dn.judgeT<0.6){g.font='28px Rye, serif';g.fillStyle=dn.judge==='Klúður!'?'#ff6b5b':'#ffe08a';g.fillText(dn.judge,DW/2,HIT-130);}
-  if(dn.running&&t<0){g.font='60px Rye, serif';g.fillStyle='#ffe08a';g.fillText(Math.ceil(-t/BEAT),DW/2,DH/2-40);}
+  for(let l=0;l<4;l++){g.strokeStyle='rgba(246,231,200,.5)';g.lineWidth=2;g.beginPath();g.arc(l*lw+lw/2,HIT,rad,0,7);g.stroke();}
+  if(dn.notes)for(const n of dn.notes){if(isE?n.eDone:n.done)continue;const y=HIT-(n.t-t)*(HIT+40)/FALL;if(y<-40)break;if(y>DH+40)continue;
+    const x=n.l*lw+lw/2;g.fillStyle=LANE_COL[n.l];g.beginPath();g.arc(x,y,rad,0,7);g.fill();g.strokeStyle='#fff';g.lineWidth=isE?2:3;g.stroke();
+    g.fillStyle='#fff';g.font=(rad+2)+'px sans-serif';g.fillText(ARR[n.l],x,y+1);}
+}
+function drawDance(t){
+  board(dx,DW,t,dn.press||[-9,-9,-9,-9],20,false);
+  if(dn.judge&&t-dn.judgeT<0.6){dx.font='24px Rye, serif';dx.fillStyle=dn.judge==='Klúður!'?'#ff6b5b':'#ffe08a';dx.fillText(dn.judge,DW/2,HIT-110);}
+  if(dn.running&&t<0){dx.font='56px Rye, serif';dx.fillStyle='#ffe08a';dx.fillText(Math.ceil(-t/0.6),DW/2,DH/2-40);}
+}
+function drawE(t){
+  board(ex,EW,t,dn.eFlash||[-9,-9,-9,-9],12,true);
+  if(dn.running&&t>0&&dn.eFlash.some(f=>t-f<0.4)){ex.font='15px Rye, serif';ex.fillStyle='#ffe08a';ex.fillText('Fullkomið!',EW/2,HIT-70);}
+  if(dn.running&&dn.ecombo>2){ex.font='13px Rye, serif';ex.fillStyle='#f6e7c8';ex.fillText('x'+dn.ecombo+' í röð',EW/2,24);}
 }
 function finishDance(){
-  dn.running=false;$('#danceStart').classList.remove('hide');$('#danceStart').textContent='Dansa aftur';
-  if(dn.escore<=dn.score)dn.escore=dn.score*1.08+40;danceHud();dn.done1=true;
-  say('dance',`Eysteinn ${dn.escore|0}, þú ${dn.score|0}. Kóngurinn á dansgólfinu, vinur! Jæja, opnaðu nú afmæliskveðjuna mína.`,true);
+  stopDance();$('#eDancer').classList.remove('go');
+  $('#danceStart').classList.remove('hide');$('#danceStart').textContent='Dansa aftur';
+  if(dn.escore<=dn.score)dn.escore=dn.score+250;danceHud();dn.done1=true;
+  say('dance',`Lagið fór upp í ${Math.round(dn.bpm)} BPM og ég missti ekki af einu spori. Eysteinn ${dn.escore|0}, þú ${dn.score|0}. Jæja, opnaðu nú afmæliskveðjuna mína.`,true);
   $('#danceFinale').classList.remove('hide');
 }
 
