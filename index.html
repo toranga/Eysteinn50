@@ -28,6 +28,8 @@ h2{font-size:clamp(22px,6vw,34px)}
 .badge.on{display:inline}
 .hero{display:flex;align-items:flex-end;gap:10px;width:min(560px,100%);min-height:80px}
 .avatar svg,#meltAv svg{width:1.1em;height:1.26em;display:block}
+.talk svg{animation:talk .16s ease-in-out infinite alternate}
+@keyframes talk{from{transform:scaleY(1)}to{transform:scaleY(1.06) translateY(-2px)}}
 .avatar{font-size:58px;line-height:1;flex:none;filter:drop-shadow(2px 3px 0 #000);display:inline-block}
 .bubble{position:relative;background:var(--cream);color:#2a1a0c;border-radius:14px;padding:9px 13px;font-weight:700;font-size:16px;flex:1;min-height:46px;display:flex;align-items:center}
 .bubble:before{content:'';position:absolute;left:-14px;bottom:14px;border:8px solid transparent;border-right-color:var(--cream)}
@@ -85,7 +87,7 @@ canvas{display:block;max-width:100%;touch-action:none}
   <h1>Saloon Eysteins</h1>
   <div class="sub rye" style="font-family:'Rye',serif;font-size:22px;color:var(--cream)">Fimmtugur og enn ósigraður</div>
   <p class="sub">Eysteinn hefur aldrei tapað. Hann hefur heldur aldrei unnið með reisn.<br>Getur þú sigrað hann á afmælisdaginn?<br><i>(Nei.)</i></p>
-  <button class="btn" onclick="sfxClick();show('menu')">Byrja</button>
+  <button class="btn" onclick="sfxClick();show('menu');voice('welcome',()=>{if(current==='menu')voice('menu')})">Byrja</button>
 </section>
 
 <!-- MENU -->
@@ -233,6 +235,23 @@ function tone(type,freq,t,dur,peak,dest){const c=ac(),o=c.createOscillator(),g=c
 function kick(t,dest){const c=ac(),o=c.createOscillator(),g=c.createGain();o.frequency.setValueAtTime(140,t);o.frequency.exponentialRampToValueAtTime(45,t+0.12);env(g,t,0.9,0.16);o.connect(g).connect(dest);o.start(t);o.stop(t+0.2);}
 function snare(t,dest,vol=0.3){const c=ac(),s=c.createBufferSource(),f=c.createBiquadFilter(),g=c.createGain();s.buffer=noiseBuf;f.type='highpass';f.frequency.value=1500;env(g,t,vol,0.11);s.connect(f).connect(g).connect(dest);s.start(t);s.stop(t+0.15);}
 function pluck(midi,t,dest,vol=0.16){const c=ac(),o=c.createOscillator(),f=c.createBiquadFilter(),g=c.createGain();o.type='sawtooth';o.frequency.value=440*Math.pow(2,(midi-69)/12);f.type='lowpass';f.frequency.setValueAtTime(3200,t);f.frequency.exponentialRampToValueAtTime(700,t+0.25);f.Q.value=3;env(g,t,vol,0.32);o.connect(f).connect(g).connect(dest);o.start(t);o.stop(t+0.4);}
+/* ---------- Eysteinn's recorded voice ---------- */
+const VOICES=['welcome','menu','p_start','p_watch','p_weep','p_talent','p_end','k_ready','k_allin','k_nice','k_royal','d_count','d_faster','d_end','b_open'];
+const VRAW={},VP={};let vSrc=null,vTalk=null;
+VOICES.forEach(k=>{VRAW[k]=fetch('voice/'+k+'.mp3').then(r=>{if(!r.ok)throw 0;return r.arrayBuffer();});VRAW[k].catch(()=>{});});
+function decodeVoices(){VOICES.forEach(k=>{if(!VP[k]){VP[k]=VRAW[k].then(ab=>new Promise((ok,no)=>AC.decodeAudioData(ab,ok,no)));VP[k].catch(()=>{});}});}
+function voice(k,after){
+  try{ac();decodeVoices();}catch(e){return;}
+  VP[k].then(buf=>{
+    try{vSrc&&vSrc.stop()}catch(e){}
+    const c=AC,src=c.createBufferSource(),g=c.createGain();src.buffer=buf;g.gain.value=1.5;src.connect(g).connect(c.destination);
+    const t=c.currentTime;src.start(t);vSrc=src;
+    if(dn.master){const mg=dn.master.gain;mg.cancelScheduledValues(t);mg.setValueAtTime(0.7,t);mg.linearRampToValueAtTime(0.22,t+0.08);mg.setValueAtTime(0.22,t+buf.duration);mg.linearRampToValueAtTime(0.7,t+buf.duration+0.3);}
+    const avs=document.querySelectorAll('#'+current+' .avatar:not(.wifeav)');avs.forEach(a=>a.classList.add('talk'));
+    clearTimeout(vTalk);vTalk=setTimeout(()=>document.querySelectorAll('.talk').forEach(a=>a.classList.remove('talk')),buf.duration*1000);
+    if(after)setTimeout(after,buf.duration*1000+300);
+  }).catch(()=>{after&&after();});
+}
 function sfxClick(){try{const c=ac();tone('square',880,c.currentTime,0.06,0.08);}catch(e){}}
 function sfxPot(){try{const c=ac();tone('triangle',660,c.currentTime,0.12,0.25);tone('triangle',990,c.currentTime+0.08,0.15,0.2);}catch(e){}}
 function sfxClack(v){try{const c=ac();snare(c.currentTime,c.destination,Math.min(0.25,v*0.02));}catch(e){}}
@@ -259,7 +278,7 @@ const pc=$('#poolCanvas'),px=pc.getContext('2d');
 const COLORS=['#f2c200','#1d4fd8','#d62828','#6a1b9a','#f77f00','#2a9d3a','#7b2d26','#111111','#e85d9c','#0fa3b1'];
 const POCKETS=[[B,B],[PW/2,B-4],[PW-B,B],[B,PH-B],[PW/2,PH-B+4],[PW-B,PH-B]];
 let balls=[],pool={};
-function openPool(){sfxClick();show('pool');poolReset();}
+function openPool(){sfxClick();show('pool');poolReset();voice('p_start');}
 function poolReset(){
   balls=[{x:B+(PW-2*B)*0.25,y:PH/2,vx:0,vy:0,c:'#fff',cue:true,in:false}];
   let n=0;const sx=570;
@@ -323,6 +342,9 @@ function poolTurnEnd(){
   let msg;
   if(who==='p'){msg=pool.scratch?'Hvíta kúlan ofan í! Klassískur nýliði.':sunk?pick(EXCUSES):pick(POOL_MISS);}
   else{msg=pool.scratch?'Þetta var viljandi. Taktísk ákvörðun.':sunk?pick(GLOATS):'Ég gaf þér þennan. Gjafmildur á afmælinu.';}
+  if(who==='e'&&sunk>0&&!pool.scratch){pool.epots=(pool.epots||0)+sunk;
+    if(pool.epots>=2&&!pool.v1){pool.v1=1;msg='Sjáðu og grenjaðu, nýgræðingur!';voice('p_weep');}
+    else if(pool.epots>=6&&!pool.v2){pool.v2=1;msg='Þetta kallast hæfileikar.';voice('p_talent');}}
   say('pool',msg,who==='e'&&sunk>0);
   const left=balls.filter(b=>!b.cue&&!b.in).length;
   if(left===0){poolHud();setTimeout(poolOver,1400);return;}
@@ -330,7 +352,7 @@ function poolTurnEnd(){
   poolHud();
   if(pool.turn==='e'&&!pool.wifeSaid){pool.wifeSaid=1;setTimeout(()=>wife('Stærri vasar? Í alvöru, elskan?'),3200);}
   if(pool.turn==='e'){
-    setTimeout(()=>{if(current!=='pool')return;say('pool',pick(['Horfðu og lærðu, vinur.','Taktu eftir. Þetta verður kennslustund.','Fylgstu vel með núna...','Sjáðu hvernig fagmaður gerir þetta.']));setTimeout(aiShot,who==='p'?1000:700);},who==='p'?1500:900);
+    setTimeout(()=>{if(current!=='pool')return;const first=!pool.watchSaid;pool.watchSaid=1;if(first)voice('p_watch');say('pool',first?'Horfðu og lærðu, vinur.':pick(['Horfðu og lærðu, vinur.','Taktu eftir. Þetta verður kennslustund.','Fylgstu vel með núna...','Sjáðu hvernig fagmaður gerir þetta.']));setTimeout(aiShot,who==='p'?1000:700);},who==='p'?1500:900);
   } else pool.state='aim';
 }
 function aiShot(){
@@ -351,7 +373,7 @@ function aiShot(){
 }
 function poolOver(){
   const {p,e}=pool.score;
-  say('pool',`Eysteinn vann ${e}–${p}. Hitti úr hverju einasta skoti. Auðvitað. Ýttu á „Byrja upp á nýtt“ ef þú þolir meira.`,true);
+  voice('p_end');say('pool',`Eysteinn vann ${e}–${p}. Hitti úr hverju einasta skoti. Tíu núll. Auðvitað. Ýttu á „Byrja upp á nýtt“ ef þú þolir meira.`,true);
 }
 function cpos(e){const r=pc.getBoundingClientRect();return{x:(e.clientX-r.left)*PW/r.width,y:(e.clientY-r.top)*PH/r.height};}
 pc.addEventListener('pointerdown',e=>{if(pool.turn!=='p'||pool.state!=='aim')return;ac();pool.drag=cpos(e);try{pc.setPointerCapture(e.pointerId)}catch(_){}e.preventDefault();});
@@ -475,18 +497,19 @@ $('#pkMain').onclick=()=>{
     pk.deal=scriptedDeal(pk.hand-1);
     renderRow('eCards',pk.deal.e,0);renderRow('board',pk.deal.b,0);renderRow('pCards',pk.deal.p,2);
     $('#pokerResult').textContent='';
-    say('poker',last?'Síðasta höndin. Gerðu þig tilbúinn að kveðja peningana þína.':pick(['Gerðu þig tilbúinn að tapa.','Ég sé á svipnum á þér að þú ert með rusl.','Ég finn lyktina af sigri.','Póker er ekki heppni, vinur. Þetta er list.']));
+    if(pk.hand===1)voice('k_ready');say('poker',last?'Síðasta höndin. Gerðu þig tilbúinn að kveðja peningana þína.':pk.hand===1?'Gerðu þig tilbúinn að tapa.':pick(['Gerðu þig tilbúinn að tapa.','Ég sé á svipnum á þér að þú ert með rusl.','Ég finn lyktina af sigri.','Póker er ekki heppni, vinur. Þetta er list.']));
     pk.stage=1;$('#pkMain').textContent='Sýna floppið';$('#pkFold').classList.toggle('hide',last);
   } else if(pk.stage<4){
     const n=[0,3,4,5][pk.stage];renderRow('board',pk.deal.b,n);
     pk.stage++;
     $('#pkMain').textContent=['','','Sýna turn','Sýna river','Sýna spilin'][pk.stage];
+    if(pk.stage===4&&pk.hand===5)voice('k_allin');
     if(pk.stage===4)say('poker',pk.hand===5?'Allt inn! Ég er með þetta! Þú ert búinn!':pick(['Hmm... já. Já, þetta lítur vel út. Fyrir mig.','Þú ættir að pakka. Bara vinaleg ráðgjöf.','Ég er ekki einu sinni að reyna.']));
   } else {
     renderRow('eCards',pk.deal.e,2);$('#pkFold').classList.add('hide');
     const c=cmpH(pk.deal.hp,pk.deal.he);
     if(c>0){pk.cp+=pk.pot;$('#pokerResult').textContent=`Þú vinnur með ${HAND_DAT[pk.deal.hp[0]]}! Eysteinn var með ${HAND_NOM[pk.deal.he[0]]}.`;}
-    else{pk.ce+=pk.pot;$('#pokerResult').textContent=`Eysteinn vinnur með ${handName(pk.deal.he,1)}. Þú varst með ${handName(pk.deal.hp,0)}.`;say('poker',pk.hand===5?'Konungleg litaröð. Á afmælisdaginn. Þetta kallast örlög, vinur.':pick(POKER_WIN),true);}
+    else{pk.ce+=pk.pot;$('#pokerResult').textContent=`Eysteinn vinnur með ${handName(pk.deal.he,1)}. Þú varst með ${handName(pk.deal.hp,0)}.`;if(pk.hand===5)voice('k_royal');else if(pk.hand===2||pk.hand===4)voice('k_nice');say('poker',pk.hand===5?'Konungleg litaröð. Á afmælisdaginn. Þetta kallast örlög, vinur.':(pk.hand===2||pk.hand===4)?'Fallegt spil hjá þér. Synd að það dugði ekki.':pick(POKER_WIN),true);}
     pk.pot=0;pk.stage=0;
     if(pk.hand>=5){$('#pkMain').textContent='Spila aftur';setTimeout(()=>say('poker','Fimm hendur, fimm sigrar. Eins og ég sagði: list.',true),2800);}
     else $('#pkMain').textContent='Næsta hönd';
@@ -508,7 +531,7 @@ const PROG=['G','C','G','D','G','C','D','G'];
 const CHORD={G:{bass:[43,38],strum:[55,59,62],roll:[67,71,74]},C:{bass:[36,43],strum:[48,52,55],roll:[67,72,76]},D:{bass:[38,45],strum:[50,54,57],roll:[66,69,74]}};
 const ROLL=[0,1,2,0,1,2,0,2];
 const MEL=[[74,74,76,74,71,0,67,69],[72,0,72,74,76,0,74,72],[71,0,67,71,74,0,79,0],[78,76,74,0,69,0,0,0],[74,74,76,74,71,0,67,69],[72,0,76,0,79,77,76,72],[74,0,69,71,72,74,66,0],[67,0,0,0,67,71,74,79]];
-const SPEED_TALK={4:'Jæja, hitum aðeins upp.',8:'Aðeins hraðar núna!',12:'Ertu ennþá með, vinur?',16:'JÍHAAA! Nú byrjar alvöru dansinn!',20:'Ég gæti þetta sofandi.',24:'Hraðar! HRAÐAR!',28:'Fæturnir mínir eru orðnir að þoku!'};
+const SPEED_TALK={4:'Jæja, hitum aðeins upp.',8:'Aðeins hraðar núna!',11:'Ertu ennþá með, vinur?',14:'Hraðar! HRAÐAR!',18:'JÍHAAA! Nú byrjar alvöru dansinn!',22:'Ég gæti þetta sofandi.',28:'Fæturnir mínir eru orðnir að þoku!'};
 const dc=$('#danceCanvas'),dx=dc.getContext('2d'),DW=220,DH=360,HIT=305;
 const ec=$('#eCanvas'),ex=ec.getContext('2d'),EW=130;
 const LANE_COL=['#e85d9c','#0fa3b1','#2a9d3a','#f77f00'],ARR=['⬅','⬇','⬆','➡'];
@@ -545,8 +568,8 @@ function danceHud(){$('#danceHud').innerHTML=`<span>Þú: ${dn.score|0}</span><s
 function startDance(){
   const c=ac();sfxClick();stopDance();
   const m=c.createGain();m.gain.value=0.7;m.connect(c.destination);
-  const t0=c.currentTime+2.6,beats=buildBeats(t0);
-  for(let k=0;k<4;k++)tone('square',k===0?1320:880,t0-(4-k)*0.6,0.05,0.12,m);
+  voice('d_count');
+  const t0=c.currentTime+4.3,beats=buildBeats(t0);
   const notes=[];
   beats.forEach((B,i)=>{if(B.bar<2&&B.b%2)return;
     const mid=MEL[B.bar%8][B.b*2];notes.push({t:B.t-t0,l:mid?mid%4:(i*3+B.bar)%4,bar:B.bar});});
@@ -564,14 +587,14 @@ function danceLoop(){
   const t=songTime(),abs=t+dn.t0;
   const cur=dn.beats.find(B=>B.t+B.bd>abs)||dn.beats[dn.beats.length-1];
   dn.bpm=cur.bpm;$('#eDancer').style.setProperty('--bd',Math.max(0.12,cur.bd)+'s');
-  if(SPEED_TALK[cur.bar]&&!dn.talked[cur.bar]){dn.talked[cur.bar]=1;say('dance',SPEED_TALK[cur.bar],true);}
+  if(SPEED_TALK[cur.bar]&&!dn.talked[cur.bar]){dn.talked[cur.bar]=1;if(cur.bar===14)voice('d_faster');say('dance',SPEED_TALK[cur.bar],true);}
   for(const n of dn.notes){
     if(!n.eDone&&t>=n.t){n.eDone=true;dn.escore+=100+dn.ecombo*2;dn.ecombo++;dn.eFlash[n.l]=t;}
     if(!n.done&&t-n.t>0.15){n.done=true;dn.combo=0;dn.miss++;dn.judge='Klúður!';dn.judgeT=t;
       if(Math.random()<0.12)say('dance',pick(['Tveir vinstri fætur!','Hahaha! Ertu að dansa eða detta?','Taktinn, vinur. TAKTINN.','Of hratt fyrir þig?']));}
   }
   danceHud();drawDance(t);drawE(t);
-  if(t>dn.end||(cur.bar>=10&&dn.miss>=14)){finishDance();return;}
+  if(t>dn.end||(cur.bar>=18&&dn.miss>=14)){finishDance();return;}
   requestAnimationFrame(danceLoop);
 }
 function hit(l){
@@ -599,7 +622,7 @@ function board(g,W,t,flash,rad,isE){
 function drawDance(t){
   board(dx,DW,t,dn.press||[-9,-9,-9,-9],20,false);
   if(dn.judge&&t-dn.judgeT<0.6){dx.font='24px Rye, serif';dx.fillStyle=dn.judge==='Klúður!'?'#ff6b5b':'#ffe08a';dx.fillText(dn.judge,DW/2,HIT-110);}
-  if(dn.running&&t<0){dx.font='56px Rye, serif';dx.fillStyle='#ffe08a';dx.fillText(Math.ceil(-t/0.6),DW/2,DH/2-40);}
+  if(dn.running&&t<0&&t>-2.4){dx.font='56px Rye, serif';dx.fillStyle='#ffe08a';dx.fillText(Math.ceil(-t/0.6),DW/2,DH/2-40);}
 }
 function drawE(t){
   board(ex,EW,t,dn.eFlash||[-9,-9,-9,-9],12,true);
@@ -610,7 +633,8 @@ function finishDance(){
   stopDance();$('#eDancer').classList.remove('go');
   $('#danceStart').classList.remove('hide');$('#danceStart').textContent='Dansa aftur';
   if(dn.escore<=dn.score)dn.escore=dn.score+250;danceHud();dn.done1=true;
-  say('dance',`Lagið fór upp í ${Math.round(dn.bpm)} BPM og ég missti ekki af einu spori. Eysteinn ${dn.escore|0}, þú ${dn.score|0}. Jæja, opnaðu nú afmæliskveðjuna mína.`,true);
+  voice('d_end',()=>{if(current==='dance'){say('dance','Jæja, opnaðu nú afmæliskveðjuna mína.',true);voice('b_open');}});
+  say('dance',`Lagið fór upp í ${Math.round(dn.bpm)} BPM og ég missti ekki af einu spori. Eysteinn ${dn.escore|0}, þú ${dn.score|0}.`,true);
   $('#danceFinale').classList.remove('hide');
 }
 
